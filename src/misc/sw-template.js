@@ -488,9 +488,7 @@ function WebpackServiceWorker(params, helpers) {
                         .then((response) => {
                             console.log('Response from:', request);
                             successful.push(response);
-                            setTimeout(() => {
-                                return done();
-                            }, 100);
+                            return done();
                         })
                         .catch((e) => {
                             console.log('Error from:', request);
@@ -501,7 +499,9 @@ function WebpackServiceWorker(params, helpers) {
                     if (failures.length) {
                         return callRequest(failures.map((f) => f.request));
                     }
-                    return resolve(successful);
+                    setTimeout(() => {
+                        return resolve(successful);
+                    }, 5000);
                 });
             }
             return callRequest(requests);
