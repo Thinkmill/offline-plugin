@@ -501,7 +501,7 @@ function WebpackServiceWorker(params, helpers) {
                     }
                     setTimeout(() => {
                         return resolve(successful);
-                    }, 5000);
+                    }, 10000);
                 });
             }
             return callRequest(requests);
