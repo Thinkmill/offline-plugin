@@ -478,7 +478,7 @@ function WebpackServiceWorker(params, helpers) {
             let failures = [];
             function callRequest (list) {
                 failures = [];
-                async.eachLimit(list, 10, (request, done) => {
+                async.eachLimit(list, 1, (request, done) => {
                     console.log('Requesting URL:', request);
                     if (bustValue) {
                         request = applyCacheBust(request, bustValue);
