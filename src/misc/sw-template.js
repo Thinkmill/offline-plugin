@@ -1,3 +1,5 @@
+const async = require('async');
+
 if (typeof DEBUG === 'undefined') {
   var DEBUG = false;
 }
@@ -470,13 +472,42 @@ function WebpackServiceWorker(params, helpers) {
       mode: 'cors'
     };
 
-    return Promise.all(requests.map((request) => {
-      if (bustValue) {
-        request = applyCacheBust(request, bustValue);
-      }
+    function requestAssets (requests) {
+        return new Promise((resolve, reject) => {
+            let successful = [];
+            let failures = [];
+            function callRequest (list) {
+                failures = [];
+                async.eachLimit(list, 10, (request, done) => {
+                    console.log('Requesting URL:', request);
+                    if (bustValue) {
+                        request = applyCacheBust(request, bustValue);
+                    }
+                    return fetch(request, requestInit)
+                        .then(fixRedirectedResponse)
+                        .then((response) => {
+                            console.log('Response from:', request);
+                            successful.push(response);
+                            return done();
+                        })
+                        .catch((e) => {
+                            console.log('Error from:', request);
+                            failures.push({ err: e, request });
+                            return done();
+                        });
+                }, (err) => {
+                    if (failures.length) {
+                        return callRequest(failures.map((f) => f.request));
+                    }
+                    return resolve(successful);
+                });
+            }
+            return callRequest(requests);
+        });
+    }
 
-      return fetch(request, requestInit).then(fixRedirectedResponse);
-    })).then((responses) => {
+    return requestAssets(requests)
+    .then((responses) => {
       if (responses.some(response => !response.ok)) {
         return Promise.reject(new Error('Wrong response status'));
       }
