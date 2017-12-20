@@ -500,11 +500,12 @@ function WebpackServiceWorker(params, helpers) {
                         return callRequest(failures.map((f) => f.request));
                     }
                     setTimeout(() => {
+                        console.log('Returning success.');
                         return resolve(successful);
                     }, 15000);
                 });
             }
-            return callRequest(requests);
+            callRequest(requests);
         });
     }
 
